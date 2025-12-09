@@ -1,14 +1,28 @@
-# Use Temurin OpenJDK 21
+# Use Java 21
 FROM eclipse-temurin:21-jdk
 
-# Set working directory
+# Set workdir
 WORKDIR /app
 
-# Copy your pre-built JAR
-COPY build/libs/coffee-shop-telegram-bot-0.0.1-SNAPSHOT.jar app.jar
+# Copy Gradle wrapper and build files
+COPY gradlew .
+COPY gradle gradle
+COPY build.gradle settings.gradle ./
 
-# Expose the port Render will route to
+# Copy source code
+COPY src src
+
+# Make Gradle wrapper executable
+RUN chmod +x ./gradlew
+
+# Build the project (skip tests)
+RUN ./gradlew build -x test
+
+# Copy built JAR to app.jar
+RUN cp build/libs/coffee-shop-telegram-bot-0.0.1-SNAPSHOT.jar app.jar
+
+# Expose port
 EXPOSE 8080
 
-# Command to run your Spring Boot app
+# Run the app
 CMD ["sh", "-c", "java -jar app.jar --server.port=$PORT"]
